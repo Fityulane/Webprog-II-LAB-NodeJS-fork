@@ -92,4 +92,64 @@ router.post("/:id/delete", async function (req, res, next) {
   }
 });
 
+router.get("/:id/edit", async function (req, res, next) {
+  try {
+    const sutiId = req.params.id;
+    const results = await query(`SELECT * FROM suti WHERE id = ${sutiId}`);
+
+    if (results.length === 0) {
+      req.flash("error", "A megadott süti nem található!");
+      return res.redirect("/crud/sutik");
+    }
+
+    const suti = results[0];
+    res.render("crud/edit-suti", { title: "Süti szerkesztése", suti });
+  } catch (error) {
+    req.flash("error", "Hiba történt a süti lekérése során!");
+    res.redirect("/crud/sutik");
+  }
+});
+
+router.post("/:id/edit", async function (req, res, next) {
+  try {
+    const sutiId = req.params.id;
+    const { nev, tipus, dijazott } = req.body;
+    const errors = {};
+
+    if (!nev || nev.trim().length < 2) {
+      errors.nev = "A név legalább 2 karakter kell legyen!";
+    }
+
+    if (!tipus || tipus.trim().length < 2) {
+      errors.tipus = "A típus legalább 2 karakter kell legyen!";
+    }
+
+    if (
+      typeof dijazott === "undefined" ||
+      (dijazott !== "0" && dijazott !== "1")
+    ) {
+      errors.dijazott = "A díjazott mező értéke érvénytelen!";
+    }
+
+    if (Object.keys(errors).length > 0) {
+      const suti = { id: sutiId, nev, tipus, dijazott };
+      return res.render("crud/edit-suti", {
+        title: "Süti szerkesztése",
+        errors: errors,
+        suti: suti,
+      });
+    }
+
+    const mysqlQuery = `UPDATE suti SET nev = '${nev}', tipus = '${tipus}', dijazott = '${dijazott}', updated_at = NOW() WHERE id = ${sutiId}`;
+
+    await query(mysqlQuery);
+
+    req.flash("success", "Süti sikeresen módosítva!");
+    res.redirect("/crud/sutik");
+  } catch (error) {
+    req.flash("error", "Hiba történt a süti módosítása során!");
+    res.redirect(`/crud/sutik/${req.params.id}/edit`);
+  }
+});
+
 module.exports = router;
