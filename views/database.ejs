@@ -75,7 +75,58 @@
         </table>
     </div>
 
+    <!-- Pagination Start -->
     <div class="d-flex justify-content-center mt-4">
+        <nav aria-label="Süti lista lapozás">
+            <ul class="pagination pagination-lg">
+                <!-- Első oldal -->
+                <% if (pagination.currentPage > 1) { %>
+                    <li class="page-item">
+                        <a class="page-link" href="?oldal=1" aria-label="Első">
+                            <span aria-hidden="true">&laquo;&laquo;</span>
+                        </a>
+                    </li>
+                <% } %>
 
+                <!-- Előző oldal -->
+                <% if (pagination.hasPrevPage) { %>
+                    <li class="page-item">
+                        <a class="page-link" href="?oldal=<%= pagination.prevPage %>" aria-label="Előző">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                <% } %>
+
+                <!-- Oldalszámok -->
+                <% 
+                const startPage = Math.max(1, pagination.currentPage - 2);
+                const endPage = Math.min(pagination.totalPages, pagination.currentPage + 2);
+                %>
+                
+                <% for (let i = startPage; i <= endPage; i++) { %>
+                    <li class="page-item <%= i === pagination.currentPage ? 'active' : '' %>">
+                        <a class="page-link" href="?oldal=<%= i %>"><%= i %></a>
+                    </li>
+                <% } %>
+
+                <!-- Következő oldal -->
+                <% if (pagination.hasNextPage) { %>
+                    <li class="page-item">
+                        <a class="page-link" href="?oldal=<%= pagination.nextPage %>" aria-label="Következő">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                <% } %>
+
+                <!-- Utolsó oldal -->
+                <% if (pagination.currentPage < pagination.totalPages) { %>
+                    <li class="page-item">
+                        <a class="page-link" href="?oldal=<%= pagination.totalPages %>" aria-label="Utolsó">
+                            <span aria-hidden="true">&raquo;&raquo;</span>
+                        </a>
+                    </li>
+                <% } %>
+            </ul>
+        </nav>
     </div>
 </div>
