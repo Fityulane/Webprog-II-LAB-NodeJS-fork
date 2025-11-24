@@ -20,6 +20,26 @@
 
 <div class="container mt-4 pb-5">
     <h1 class="mb-4">Sütik kezelése</h1>
+    <!-- Flash üzenetek -->
+    <div class="row justify-content-center mt-3">
+        <div class="col-lg-8">
+            <% if (typeof messages !=='undefined' && messages.error) { %>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <%= messages.error %>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                <% } %>
+
+                    <% if (typeof messages !=='undefined' && messages.success) { %>
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <%= messages.success %>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        <% } %>
+        </div>
+    </div>
     <div class="d-flex justify-content-end mx-auto w-75 my-2">
         <a href="/crud/sutik/new" class="btn btn-primary d-block">Új süti hozzáadása</a>
     </div>
@@ -51,13 +71,13 @@
                                 <span class="text-primary">igen</span>
                                 <% } %>
                         </td>
+
                         <td class="d-flex gap-2 justify-content-center">
                             <a href="/crud/sutik/<%= suti.id %>/edit"><i class="bi bi-pencil text-warning fs-4"></i></a>
-                            <form action="/crud/sutik/<%= suti.id %>" method="DELETE" class="m-0 p-0">
-                                <button type="submit" class="btn btn-link p-0 border-0 bg-transparent">
-                                    <i class="bi bi-trash text-danger fs-4"></i>
-                                </button>
-                            </form>
+                            <button type="button" class="btn btn-link p-0 border-0 bg-transparent"
+                                data-bs-toggle="modal" data-bs-target="#deleteModal<%= suti.id %>">
+                                <i class="bi bi-trash text-danger fs-4"></i>
+                            </button>
                         </td>
                     </tr>
                     <% }); %>
@@ -65,61 +85,97 @@
         </table>
     </div>
 
-    <!-- Pagination Start -->
-    <div class="d-flex justify-content-center mt-4">
-        <nav aria-label="Süti lista lapozás">
-            <ul class="pagination pagination">
-                <!-- Első oldal -->
-                <% if (pagination.currentPage> 1) { %>
-                    <li class="page-item">
-                        <a class="page-link" href="?oldal=1" aria-label="Első">
-                            <span aria-hidden="true">&laquo;&laquo;</span>
-                        </a>
-                    </li>
-                    <% } %>
+    <!--  Modal  -->
+    <% sutik.forEach(function(suti) { %>
+        <div class="modal fade" id="deleteModal<%= suti.id %>" tabindex="-1"
+            aria-labelledby="deleteModalLabel<%= suti.id %>" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteModalLabel<%= suti.id %>">
+                            Törlés megerősítése
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Bezárás"></button>
+                    </div>
+                    <div class="modal-body text-center">
+                        <p>Biztosan törölni akarod ezt a sütit?</p>
+                        <strong>
+                            <%= suti.nev %>
+                        </strong>
+                    </div>
+                    <div class="modal-footer justify-content-center">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                            Mégse
+                        </button>
+                        <form action="/crud/sutik/<%= suti.id %>/delete" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-danger">
+                                Törlés
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <% }); %>
 
-                        <!-- Előző oldal -->
-                        <% if (pagination.hasPrevPage) { %>
+            <!-- Pagination Start -->
+            <div class="d-flex justify-content-center mt-4">
+                <nav aria-label="Süti lista lapozás">
+                    <ul class="pagination pagination">
+                        <!-- Első oldal -->
+                        <% if (pagination.currentPage> 1) { %>
                             <li class="page-item">
-                                <a class="page-link" href="?oldal=<%= pagination.prevPage %>" aria-label="Előző">
-                                    <span aria-hidden="true">&laquo;</span>
+                                <a class="page-link" href="?oldal=1" aria-label="Első">
+                                    <span aria-hidden="true">&laquo;&laquo;</span>
                                 </a>
                             </li>
                             <% } %>
 
-                                <!-- Oldalszámok -->
-                                <% const startPage=Math.max(1, pagination.currentPage - 2); const
-                                    endPage=Math.min(pagination.totalPages, pagination.currentPage + 2); %>
+                                <!-- Előző oldal -->
+                                <% if (pagination.hasPrevPage) { %>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?oldal=<%= pagination.prevPage %>"
+                                            aria-label="Előző">
+                                            <span aria-hidden="true">&laquo;</span>
+                                        </a>
+                                    </li>
+                                    <% } %>
 
-                                    <% for (let i=startPage; i <=endPage; i++) { %>
-                                        <li class="page-item <%= i === pagination.currentPage ? 'active' : '' %>">
-                                            <a class="page-link" href="?oldal=<%= i %>">
-                                                <%= i %>
-                                            </a>
-                                        </li>
-                                        <% } %>
+                                        <!-- Oldalszámok -->
+                                        <% const startPage=Math.max(1, pagination.currentPage - 2); const
+                                            endPage=Math.min(pagination.totalPages, pagination.currentPage + 2); %>
 
-                                            <!-- Következő oldal -->
-                                            <% if (pagination.hasNextPage) { %>
-                                                <li class="page-item">
-                                                    <a class="page-link" href="?oldal=<%= pagination.nextPage %>"
-                                                        aria-label="Következő">
-                                                        <span aria-hidden="true">&raquo;</span>
+                                            <% for (let i=startPage; i <=endPage; i++) { %>
+                                                <li
+                                                    class="page-item <%= i === pagination.currentPage ? 'active' : '' %>">
+                                                    <a class="page-link" href="?oldal=<%= i %>">
+                                                        <%= i %>
                                                     </a>
                                                 </li>
                                                 <% } %>
 
-                                                    <!-- Utolsó oldal -->
-                                                    <% if (pagination.currentPage < pagination.totalPages) { %>
+                                                    <!-- Következő oldal -->
+                                                    <% if (pagination.hasNextPage) { %>
                                                         <li class="page-item">
                                                             <a class="page-link"
-                                                                href="?oldal=<%= pagination.totalPages %>"
-                                                                aria-label="Utolsó">
-                                                                <span aria-hidden="true">&raquo;&raquo;</span>
+                                                                href="?oldal=<%= pagination.nextPage %>"
+                                                                aria-label="Következő">
+                                                                <span aria-hidden="true">&raquo;</span>
                                                             </a>
                                                         </li>
                                                         <% } %>
-            </ul>
-        </nav>
-    </div>
+
+                                                            <!-- Utolsó oldal -->
+                                                            <% if (pagination.currentPage < pagination.totalPages) { %>
+                                                                <li class="page-item">
+                                                                    <a class="page-link"
+                                                                        href="?oldal=<%= pagination.totalPages %>"
+                                                                        aria-label="Utolsó">
+                                                                        <span aria-hidden="true">&raquo;&raquo;</span>
+                                                                    </a>
+                                                                </li>
+                                                                <% } %>
+                    </ul>
+                </nav>
+            </div>
 </div>

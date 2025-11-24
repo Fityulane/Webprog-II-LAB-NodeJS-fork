@@ -80,4 +80,16 @@ router.post("/", async function (req, res, next) {
   }
 });
 
+router.post("/:id/delete", async function (req, res, next) {
+  try {
+    const sutiId = req.params.id;
+    await query(`DELETE FROM suti WHERE id = ${sutiId}`);
+    req.flash("success", "Süti sikeresen törölve!");
+    res.redirect("/crud/sutik");
+  } catch (error) {
+    req.flash("error", "Hiba történt a süti törlése során!");
+    res.redirect("/crud/sutik");
+  }
+});
+
 module.exports = router;
